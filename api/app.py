@@ -64,5 +64,6 @@ def predict(data: Features) -> dict[str, float]:
     except (ValueError, TypeError):
         raise HTTPException(status_code=500, detail="Prediction output is not numeric")
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.exception("Prediction failed: %s", e)
+        raise HTTPException(status_code=500, detail="Prediction failed")
     return {"prediction": pred}

@@ -4,17 +4,7 @@ up-mlflow:
 	docker-compose -f mlflow/docker-compose.yml up -d
 
 train-local:
-	python - <<'PY2'\
-import mlflow\
-import numpy as np\
-from sklearn.linear_model import LinearRegression\
-X = np.arange(0,10).reshape(-1,1)\
-y = np.arange(0,10)\
-model = LinearRegression().fit(X, y)\
-with mlflow.start_run():\
-    mlflow.sklearn.log_model(model, 'model')\
-    mlflow.log_metric('rmse', 0.0)\
-PY2
+	python scripts/train.py
 
 argo-submit:
 	argo submit argo/workflow.yaml

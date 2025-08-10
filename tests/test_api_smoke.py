@@ -59,5 +59,4 @@ def test_predict_internal_error(monkeypatch):
     client = TestClient(app)
     response = client.post("/predict", json={"features": [1, 2, 3]})
     assert response.status_code == 500
-    data = response.json()
-    assert "boom" in data.get("detail", "")
+    assert response.json()["detail"] == "Prediction failed"
