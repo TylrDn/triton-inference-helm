@@ -1,0 +1,30 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: register-template
+spec:
+  templates:
+    - name: main
+      inputs:
+        artifacts:
+          - name: model
+            path: /model
+        parameters:
+          - name: metrics
+      container:
+        image: python:3.11-slim
+        env:
+          - name: MLFLOW_TRACKING_URI
+            value: {{workflow.parameters.mlflow_uri}}
+          - name: METRICS
+            value: "{{inputs.parameters.metrics}}"
+        command: ["python", "-"]
+        args:
+          - |
+            import json, os, mlflow
+            metrics = json.loads(os.environ["METRICS"])
+            if float(metrics.get("rmse", 1)) < 0.1:
+                mlflow.set_tracking_uri(os.environ["MLFLOW_TRACKING_URI"])
+                mv = mlflow.register_model("file:///model", "model")
+                client = mlflow.tracking.MlflowClient()
+                client.transition_model_version_stage("model", mv.version, "Production")

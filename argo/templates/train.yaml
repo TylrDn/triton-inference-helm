@@ -1,0 +1,22 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: train-template
+spec:
+  templates:
+    - name: main
+      inputs:
+        artifacts:
+          - name: prepared
+            path: /data/prepared.csv
+      outputs:
+        artifacts:
+          - name: model
+            path: /model
+      container:
+        image: python:3.11-slim
+        command: ["bash", "-c"]
+        args: ["python /scripts/train.py && cp -r mlruns/0/*/artifacts/model /model"]
+        volumeMounts:
+          - name: workdir
+            mountPath: /scripts

@@ -1,0 +1,28 @@
+version: '3.8'
+services:
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:latest
+    ports:
+      - "5000:5000"
+    environment:
+      MLFLOW_S3_ENDPOINT_URL: http://minio:9000
+      # Credentials for MinIO/S3
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-minio}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-minio123}
+      BACKEND_STORE_URI: sqlite:///mlflow.db
+    command: >
+      mlflow server --backend-store-uri \
+      ${BACKEND_STORE_URI} --default-artifact-root s3://mlflow/ --host 0.0.0.0
+    volumes:
+      - ./mlruns:/mlflow/mlruns
+      - ./mlflow.db:/mlflow/mlflow.db
+  minio:
+    image: minio/minio:latest
+    command: server /data
+    ports:
+      - "9000:9000"
+    environment:
+      MINIO_ACCESS_KEY: ${AWS_ACCESS_KEY_ID:-minio}
+      MINIO_SECRET_KEY: ${AWS_SECRET_ACCESS_KEY:-minio123}
+    volumes:
+      - ./minio:/data
