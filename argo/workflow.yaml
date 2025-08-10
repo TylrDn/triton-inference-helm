@@ -4,6 +4,9 @@ metadata:
   generateName: mlops-
 spec:
   entrypoint: pipeline
+  volumes:
+    - name: workdir
+      emptyDir: {}
   arguments:
     parameters:
       - name: dataset

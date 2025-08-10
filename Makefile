@@ -28,7 +28,8 @@ perf-test:
 	bash scripts/perf_test.sh
 
 lint:
-	pre-commit run --all-files
+        pip install pre-commit
+        pre-commit run --all-files
 
 clean:
 	docker-compose -f mlflow/docker-compose.yml down
