@@ -1,4 +1,4 @@
-fastapi
-uvicorn[standard]
-mlflow
-scikit-learn
+fastapi==0.110.0
+uvicorn[standard]==0.29.0
+mlflow==2.11.1
+scikit-learn==1.4.1.post1

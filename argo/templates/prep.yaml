@@ -15,7 +15,10 @@ spec:
       container:
         image: python:3.11-slim
         command: ["bash", "-c"]
-        args: ["echo preprocessing {{inputs.parameters.dataset}} && cp /data/raw.csv /tmp/prepared.csv"]
+        args: ["echo preprocessing $DATASET && cp $DATASET /tmp/prepared.csv"]
+        env:
+          - name: DATASET
+            value: "{{inputs.parameters.dataset}}"
         volumeMounts:
           - name: workdir
             mountPath: /data

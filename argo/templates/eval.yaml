@@ -18,3 +18,6 @@ spec:
         image: python:3.11-slim
         command: ["bash", "-c"]
         args: ["echo '{\"rmse\":0.0}' > /tmp/metrics.json"]
+        volumeMounts:
+          - name: workdir
+            mountPath: /scripts

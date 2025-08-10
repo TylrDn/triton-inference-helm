@@ -1,19 +1,21 @@
 from __future__ import annotations
 
+import logging
 import os
 from typing import List
 
 import joblib
 import mlflow
-from fastapi import FastAPI
-from pydantic import BaseModel
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel, conlist
 
 
 class Features(BaseModel):
-    features: List[float]
+    features: conlist(float, min_items=1)
 
 
 app = FastAPI()
+logger = logging.getLogger(__name__)
 
 
 def load_model():
@@ -24,7 +26,7 @@ def load_model():
         if latest:
             return mlflow.pyfunc.load_model(latest[0].source)
     except Exception:
-        pass
+        logger.exception("Exception occurred while loading model from MLflow.")
     path = os.environ.get("MODEL_PATH", "data/model.pkl")
     if os.path.exists(path):
         return joblib.load(path)
@@ -45,10 +47,12 @@ def healthz() -> dict[str, str]:
 
 
 @app.post("/predict")
-def predict(data: Features) -> dict[str, float | None]:
-    pred = model.predict([data.features])[0]
+def predict(data: Features) -> dict[str, float]:
     try:
+        pred = model.predict([data.features])[0]
         pred = float(pred)
+    except ValueError:
+        raise HTTPException(status_code=500, detail="Non-numeric prediction")
     except Exception:
-        pred = None
+        raise HTTPException(status_code=500, detail="Prediction failed")
     return {"prediction": pred}

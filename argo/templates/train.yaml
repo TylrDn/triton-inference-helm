@@ -20,3 +20,5 @@ spec:
         volumeMounts:
           - name: workdir
             mountPath: /scripts
+          - name: workdir
+            mountPath: /data
