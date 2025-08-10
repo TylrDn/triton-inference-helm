@@ -1,0 +1,61 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: mlops-
+spec:
+  entrypoint: pipeline
+  arguments:
+    parameters:
+      - name: dataset
+        value: s3://minio/datasets/data.csv
+      - name: mlflow_uri
+        value: http://mlflow:5000
+  templates:
+    - name: pipeline
+      dag:
+        tasks:
+          - name: prep
+            templateRef:
+              name: prep-template
+              template: main
+            arguments:
+              parameters:
+                - name: dataset
+                  value: "{{workflow.parameters.dataset}}"
+          - name: train
+            dependencies: [prep]
+            templateRef:
+              name: train-template
+              template: main
+            arguments:
+              artifacts:
+                - name: prepared
+                  from: "{{tasks.prep.outputs.artifacts.prepared}}"
+          - name: eval
+            dependencies: [train]
+            templateRef:
+              name: eval-template
+              template: main
+            arguments:
+              artifacts:
+                - name: model
+                  from: "{{tasks.train.outputs.artifacts.model}}"
+          - name: register
+            dependencies: [eval]
+            templateRef:
+              name: register-template
+              template: main
+            arguments:
+              artifacts:
+                - name: model
+                  from: "{{tasks.train.outputs.artifacts.model}}"
+              parameters:
+                - name: metrics
+                  value: "{{tasks.eval.outputs.parameters.metrics}}"
+      outputs:
+        artifacts:
+          - name: model
+            from: "{{tasks.train.outputs.artifacts.model}}"
+        parameters:
+          - name: metrics
+            value: "{{tasks.eval.outputs.parameters.metrics}}"

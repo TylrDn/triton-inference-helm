@@ -1,0 +1,21 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: prep-template
+spec:
+  templates:
+    - name: main
+      inputs:
+        parameters:
+          - name: dataset
+      outputs:
+        artifacts:
+          - name: prepared
+            path: /tmp/prepared.csv
+      container:
+        image: python:3.11-slim
+        command: ["bash", "-c"]
+        args: ["echo preprocessing {{inputs.parameters.dataset}} && cp /data/raw.csv /tmp/prepared.csv"]
+        volumeMounts:
+          - name: workdir
+            mountPath: /data

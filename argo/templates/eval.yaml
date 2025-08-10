@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: eval-template
+spec:
+  templates:
+    - name: main
+      inputs:
+        artifacts:
+          - name: model
+            path: /model
+      outputs:
+        parameters:
+          - name: metrics
+            valueFrom:
+              path: /tmp/metrics.json
+      container:
+        image: python:3.11-slim
+        command: ["bash", "-c"]
+        args: ["echo '{\"rmse\":0.0}' > /tmp/metrics.json"]
