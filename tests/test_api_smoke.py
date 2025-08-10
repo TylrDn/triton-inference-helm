@@ -22,6 +22,12 @@ def test_predict_wrong_type_features():
     assert response.status_code == 422
 
 
+def test_predict_non_numeric_features():
+    client = TestClient(app)
+    response = client.post("/predict", json={"features": [1, "a", 3]})
+    assert response.status_code == 422
+
+
 def test_predict_empty_features():
     client = TestClient(app)
     response = client.post("/predict", json={"features": []})
@@ -39,6 +45,7 @@ def test_predict_non_numeric_output(monkeypatch):
     client = TestClient(app)
     response = client.post("/predict", json={"features": [1, 2, 3]})
     assert response.status_code == 500
+    assert response.json()["detail"] == "Prediction output is not numeric"
 
 
 def test_predict_internal_error(monkeypatch):
@@ -52,3 +59,5 @@ def test_predict_internal_error(monkeypatch):
     client = TestClient(app)
     response = client.post("/predict", json={"features": [1, 2, 3]})
     assert response.status_code == 500
+    data = response.json()
+    assert "boom" in data.get("detail", "")
